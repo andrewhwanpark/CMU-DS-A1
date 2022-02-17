@@ -79,19 +79,17 @@ class CLI:
             if action == "run":
                 model_results = {
                     "smell": self.smells.get(dataset),
-                    "accuracy": model.accuracy,
-                    "optimized_accuracy": model.optimized_accuracy,
-                    "f1_score": model.f1_score,
-                    "optimized_f1_score": model.optimized_f1_score,
+                    "accuracy": model.optimized_accuracy,
+                    "f1_score": model.optimized_f1_score,
                 }
             else:
                 # compare
                 model_results = {
                     "smell": self.smells.get(dataset),
-                    "accuracy": model.accuracy,
-                    "train_accuracy": model.train_accuracy,
-                    "f1_score": model.f1_score,
-                    "train_f1_score": model.train_f1_score,
+                    "accuracy": model.optimized_accuracy,
+                    "train_accuracy": model.optimized_train_accuracy,
+                    "f1_score": model.optimized_f1_score,
+                    "train_f1_score": model.optimized_train_f1_score,
                 }
 
             self.results.append(model_results)
