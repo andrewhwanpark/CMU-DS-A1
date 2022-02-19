@@ -2,6 +2,7 @@ import glob
 import os
 from PyInquirer import prompt
 from tabulate import tabulate
+from dataset import Dataset
 
 from model import Model
 
@@ -43,6 +44,20 @@ class CLI:
             },
             {
                 "type": "checkbox",
+                "name": "models",
+                "message": "Select models",
+                "choices": [
+                    {"name": "DT"},
+                    {"name": "RF"},
+                    {"name": "NB"},
+                    {"name": "SVC"},
+                ],
+                "validate": lambda answer: "You must choose at least one model."
+                if len(answer) == 0
+                else True,
+            },
+            {
+                "type": "checkbox",
                 "name": "datasets",
                 "message": "Select datasets",
                 "choices": choices,
@@ -69,30 +84,40 @@ class CLI:
     def parse_input(self):
         action = self.answers["action"]
         datasets_input = self.answers["datasets"]
+        models = self.answers["models"]
 
-        for dataset in datasets_input:
-            dataset_path = os.path.join(os.getcwd(), "datasets", dataset)
+        for dataset_input in datasets_input:
+            dataset_path = os.path.join(os.getcwd(), "datasets", dataset_input)
 
-            model = Model(dataset_path)
-            model_results = {}
+            # Prepare dataset
+            dataset = Dataset(dataset_path)
+            dataset.prepare_dataset_for_training_and_testing()
 
-            if action == "run":
-                model_results = {
-                    "smell": self.smells.get(dataset),
-                    "accuracy": model.optimized_accuracy,
-                    "f1_score": model.optimized_f1_score,
-                }
-            else:
-                # compare
-                model_results = {
-                    "smell": self.smells.get(dataset),
-                    "accuracy": model.optimized_accuracy,
-                    "train_accuracy": model.optimized_train_accuracy,
-                    "f1_score": model.optimized_f1_score,
-                    "train_f1_score": model.optimized_train_f1_score,
-                }
+            # Train models
+            for model_name in models:
+                print(f":::TRAINING {model_name} MODEL:::")
+                model = Model(model_name, dataset)
+                model_results = {}
 
-            self.results.append(model_results)
+                if action == "run":
+                    model_results = {
+                        "model": model_name,
+                        "smell": self.smells.get(dataset_input),
+                        "accuracy": model.optimized_accuracy,
+                        "f1_score": model.optimized_f1_score,
+                    }
+                else:
+                    # compare
+                    model_results = {
+                        "model": model_name,
+                        "smell": self.smells.get(dataset_input),
+                        "accuracy": model.optimized_accuracy,
+                        "train_accuracy": model.optimized_train_accuracy,
+                        "f1_score": model.optimized_f1_score,
+                        "train_f1_score": model.optimized_train_f1_score,
+                    }
+
+                self.results.append(model_results)
 
     def prepare_table(self):
         self.table = tabulate(self.results, headers="keys", tablefmt="pretty")
