@@ -71,7 +71,7 @@ class Model:
             cv=3,
             scoring="accuracy",
             return_train_score=True,
-            n_jobs=-1,
+            n_jobs=-1,  # use all CPU cores
         )
         grid_search.fit(self.dataset.X_train, self.dataset.y_train)
 
